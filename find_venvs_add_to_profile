@@ -1,0 +1,29 @@
+# Type notepad $PROFILE and add the below code
+function venv {
+    param (
+        [Parameter(Position = 0, Mandatory = $false)]
+        [ArgumentCompleter({ 
+            param ($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+            $venvPath = "C:\venvs"  # Change this if your virtual environments are stored elsewhere
+            Get-ChildItem -Path $venvPath -Directory | Where-Object { $_.Name -like "$wordToComplete*" } | ForEach-Object { $_.Name }
+        })]
+        [string]$envName
+    )
+
+    $venvPath = "C:\venvs"
+
+    # List available environments if no argument is provided
+    if (-not $envName) {
+        Get-ChildItem -Path $venvPath -Directory | Select-Object -ExpandProperty Name
+        return
+    }
+
+    # Check if the selected environment exists
+    $envDir = Join-Path $venvPath $envName
+    if (Test-Path "$envDir\Scripts\Activate") {
+        Write-Host "Activating virtual environment: $envName"
+        & "$envDir\Scripts\Activate.ps1"
+    } else {
+        Write-Host "Error: Virtual environment '$envName' not found in $venvPath" -ForegroundColor Red
+    }
+}
